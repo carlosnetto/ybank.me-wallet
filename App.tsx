@@ -20,22 +20,30 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [merchantSettings, setMerchantSettings] = useState({
+    merchantName: 'My Merchant',
+    tips: [10, 15, 20],
+  });
 
   // Load existing session on mount
   useEffect(() => {
     console.log("🚀 App initializing...");
-
-    // Check for API Key (Vite usually requires VITE_ prefix, but checking both)
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn("⚠️ GEMINI_API_KEY is missing in .env.local. AI features may not work.");
-    }
 
     const serverUrl = import.meta.env.VITE_QRAPPSERVER_URL || 'http://localhost:5010';
     console.log(`🔗 Backend API configured at: ${serverUrl}`);
 
     const savedMnemonic = localStorage.getItem('base_wallet_mnemonic');
     const isLoggedIn = localStorage.getItem('base_wallet_logged_in');
+
+    // Load Merchant Settings
+    const savedSettings = localStorage.getItem('merchant_settings');
+    if (savedSettings) {
+      try {
+        setMerchantSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error("Failed to load merchant settings", e);
+      }
+    }
 
     if (isLoggedIn === 'true' && savedMnemonic) {
       initializeWallet(savedMnemonic);
@@ -232,6 +240,11 @@ const App: React.FC = () => {
     setView(ViewState.LOGIN);
   };
 
+  const handleUpdateSettings = (newSettings: typeof merchantSettings) => {
+    setMerchantSettings(newSettings);
+    localStorage.setItem('merchant_settings', JSON.stringify(newSettings));
+  };
+
   const containerClasses = "flex flex-col h-screen max-w-[393px] mx-auto bg-gray-50 shadow-2xl relative overflow-hidden";
 
   // Global Loading State
@@ -282,7 +295,11 @@ const App: React.FC = () => {
   if (view === ViewState.SETTINGS) {
     return (
       <div className={containerClasses}>
-        <SettingsView onBack={() => setView(ViewState.DASHBOARD)} />
+        <SettingsView
+          onBack={() => setView(ViewState.DASHBOARD)}
+          settings={merchantSettings}
+          onUpdate={handleUpdateSettings}
+        />
       </div>
     );
   }
@@ -343,6 +360,7 @@ const App: React.FC = () => {
             <ChargeView
               onCancel={() => setView(ViewState.DASHBOARD)}
               address={walletState.address}
+              merchantSettings={merchantSettings}
             />
           </div>
         )}
