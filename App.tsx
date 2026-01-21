@@ -165,15 +165,8 @@ const App: React.FC = () => {
 
   // Google Login entry point
   const handleLogin = () => {
-    const savedMnemonic = localStorage.getItem('base_wallet_mnemonic');
-
-    if (savedMnemonic) {
-      // If we have a saved wallet, just log in
-      initializeWallet(savedMnemonic);
-    } else {
-      // If NO wallet exists, go to SETUP screen instead of auto-creating
-      setView(ViewState.SETUP);
-    }
+    // Always go to setup screen to allow user to choose between existing, new, or import
+    setView(ViewState.SETUP);
   };
 
   // Create New Wallet Flow
@@ -232,10 +225,8 @@ const App: React.FC = () => {
 
   const confirmLogout = () => {
     setShowLogoutModal(false);
-    // CRITICAL: Remove BOTH logged_in flag AND the mnemonic
-    // This ensures next user starts fresh
+    // Remove logged_in flag but keep mnemonic for "Continue" functionality
     localStorage.removeItem('base_wallet_logged_in');
-    localStorage.removeItem('base_wallet_mnemonic');
     setWallet(null);
     setView(ViewState.LOGIN);
   };
@@ -269,11 +260,18 @@ const App: React.FC = () => {
     </div>
   );
 
-  if (view === ViewState.SETUP) return (
-    <div className={containerClasses}>
-      <SetupWalletView onCreate={handleCreateWallet} onImport={() => setView(ViewState.IMPORT)} />
-    </div>
-  );
+  if (view === ViewState.SETUP) {
+    const savedMnemonic = localStorage.getItem('base_wallet_mnemonic');
+    return (
+      <div className={containerClasses}>
+        <SetupWalletView
+          onCreate={handleCreateWallet}
+          onImport={() => setView(ViewState.IMPORT)}
+          onContinue={savedMnemonic ? () => initializeWallet(savedMnemonic) : undefined}
+        />
+      </div>
+    );
+  }
 
   if (view === ViewState.IMPORT) return (
     <div className={containerClasses}>

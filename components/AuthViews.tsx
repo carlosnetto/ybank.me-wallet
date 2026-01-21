@@ -19,13 +19,13 @@ export const LoginView: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-600 p-6 text-white relative">
+    <div className="flex flex-col items-center justify-center h-full bg-blue-600 p-6 text-white relative">
       <div className="mb-16 flex flex-col items-center animate-in slide-in-from-bottom-4 duration-700">
         <div className="w-28 h-20 bg-blue-800 rounded-3xl flex items-center justify-center mb-6 shadow-2xl ring-4 ring-blue-400/30 relative overflow-hidden group">
-           <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-           <Landmark className="w-10 h-10 text-white fill-blue-800" strokeWidth={1.5} />
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Landmark className="w-10 h-10 text-white fill-blue-800" strokeWidth={1.5} />
         </div>
-        
+
         <h1 className="text-4xl font-bold tracking-tight mb-2">YBank.me</h1>
         <p className="text-blue-100 text-lg font-medium opacity-90">You are the bank.</p>
       </div>
@@ -51,7 +51,7 @@ export const LoginView: React.FC<LoginProps> = ({ onLogin }) => {
       </button>
 
       <p className="mt-8 text-xs text-blue-200 text-center max-w-xs opacity-75">
-        By continuing, you verify that you are the owner of this account. 
+        By continuing, you verify that you are the owner of this account.
         Authentication is powered by secure token exchange.
       </p>
     </div>
@@ -61,18 +61,19 @@ export const LoginView: React.FC<LoginProps> = ({ onLogin }) => {
 interface SetupProps {
   onCreate: () => void;
   onImport: () => void;
+  onContinue?: () => void;
 }
 
-export const SetupWalletView: React.FC<SetupProps> = ({ onCreate, onImport }) => {
+export const SetupWalletView: React.FC<SetupProps> = ({ onCreate, onImport, onContinue }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-6 pt-12">
+    <div className="flex flex-col h-full bg-gray-50 p-6 pt-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
         <p className="text-gray-500 mt-2">Your Google account is verified. How would you like to set up your vault?</p>
       </div>
 
-      <div className="flex-1 space-y-4">
-        <button 
+      <div className="space-y-4">
+        <button
           onClick={onCreate}
           className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-500 transition-colors"
         >
@@ -87,7 +88,7 @@ export const SetupWalletView: React.FC<SetupProps> = ({ onCreate, onImport }) =>
           </div>
         </button>
 
-        <button 
+        <button
           onClick={onImport}
           className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-500 transition-colors"
         >
@@ -102,6 +103,17 @@ export const SetupWalletView: React.FC<SetupProps> = ({ onCreate, onImport }) =>
           </div>
         </button>
       </div>
+
+      {onContinue && (
+        <div className="mt-auto pb-8">
+          <button
+            onClick={onContinue}
+            className="w-full py-4 bg-green-600 text-white rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+          >
+            Continue with Previous Wallet
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -120,55 +132,55 @@ export const ImportWalletView: React.FC<ImportProps> = ({ onImport, onCancel }) 
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     setTimeout(() => {
-        const cleanPhrase = phrase.trim().replace(/\s+/g, ' ');
-        if (validateMnemonic(cleanPhrase)) {
-            onImport(cleanPhrase);
-        } else {
-            setError("Invalid recovery phrase. Please ensure you entered all 12 words correctly.");
-            setIsLoading(false);
-        }
+      const cleanPhrase = phrase.trim().replace(/\s+/g, ' ');
+      if (validateMnemonic(cleanPhrase)) {
+        onImport(cleanPhrase);
+      } else {
+        setError("Invalid recovery phrase. Please ensure you entered all 12 words correctly.");
+        setIsLoading(false);
+      }
     }, 500);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white p-6">
-        <button onClick={onCancel} className="self-start p-2 -ml-2 text-gray-600 mb-6 hover:bg-gray-100 rounded-full transition-colors">
-            <ArrowLeft className="w-6 h-6" />
+    <div className="flex flex-col h-full bg-white p-6">
+      <button onClick={onCancel} className="self-start p-2 -ml-2 text-gray-600 mb-6 hover:bg-gray-100 rounded-full transition-colors">
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">Recovery</h1>
+      <p className="text-gray-500 mb-8">Enter your 12-word secret phrase to restore your access.</p>
+
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+        <div className="relative flex-1">
+          <textarea
+            value={phrase}
+            onChange={(e) => setPhrase(e.target.value)}
+            placeholder="apple banana cherry dog elephant..."
+            className="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm leading-relaxed"
+          />
+          <div className="absolute bottom-4 right-4 text-xs text-gray-400 pointer-events-none">
+            {phrase.trim().split(/\s+/).filter(w => w.length > 0).length} / 12 words
+          </div>
+        </div>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={!phrase || isLoading}
+          className="mt-8 mb-4 w-full bg-blue-600 text-white font-semibold py-4 rounded-xl shadow-lg disabled:opacity-50 active:scale-95 transition-all flex items-center justify-center"
+        >
+          {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Restore Wallet"}
         </button>
-        
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Recovery</h1>
-        <p className="text-gray-500 mb-8">Enter your 12-word secret phrase to restore your access.</p>
-
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-            <div className="relative flex-1">
-                <textarea 
-                    value={phrase}
-                    onChange={(e) => setPhrase(e.target.value)}
-                    placeholder="apple banana cherry dog elephant..."
-                    className="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm leading-relaxed"
-                />
-                <div className="absolute bottom-4 right-4 text-xs text-gray-400 pointer-events-none">
-                    {phrase.trim().split(/\s+/).filter(w => w.length > 0).length} / 12 words
-                </div>
-            </div>
-
-            {error && (
-                <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    {error}
-                </div>
-            )}
-            
-            <button 
-                type="submit" 
-                disabled={!phrase || isLoading}
-                className="mt-8 mb-4 w-full bg-blue-600 text-white font-semibold py-4 rounded-xl shadow-lg disabled:opacity-50 active:scale-95 transition-all flex items-center justify-center"
-            >
-                {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Restore Wallet"}
-            </button>
-        </form>
+      </form>
     </div>
   );
 };
