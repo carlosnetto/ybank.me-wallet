@@ -596,13 +596,8 @@ export const ChargeView: React.FC<ChargeProps> = ({ onCancel, address }) => {
 
           if (txs.length > 0) {
             const latestTx = txs[0];
-            // If the latest transaction is different from what we started with
-            // AND it's an incoming transaction, consider it paid.
+            // Only trigger success if the most recent transaction is new and incoming
             if (latestTx.hash !== initialTxHash && latestTx.type === 'in') {
-              setStep('success');
-            }
-            // If we had no transactions initially, and now we have one
-            if (initialTxHash === null && latestTx.type === 'in') {
               setStep('success');
             }
           }
@@ -686,7 +681,7 @@ export const ChargeView: React.FC<ChargeProps> = ({ onCancel, address }) => {
         paymentMethods: [
           {
             currency: "USDC",
-            amount: usdcAtomic,
+            amount: Number(usdcAtomic),
             networks: {
               "Base": {
                 address: address
